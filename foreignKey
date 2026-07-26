@@ -1,0 +1,60 @@
+from sqlalchemy import ForeignKey, create_engine, MetaData, Table, Column, String, Integer, Float
+engine=create_engine('postgresql+psycopg://postgres:seema_223@localhost:5432/mydatabase',echo=True)
+
+meta=MetaData()
+
+people=Table(
+    "people", #Name of the table 
+    meta,
+    Column('id',Integer, primary_key=True),
+    Column('name',String, nullable=False),
+    Column('age',Integer)
+)
+
+things = Table(
+    "things",
+    meta,
+    Column('id',Integer,primary_key=True),
+    Column('description', String, nullable=False),
+    Column('value',Float),
+    Column('owner',Integer, ForeignKey('people.id'))
+
+)
+
+meta.create_all(engine)  #creates all the table (even when more than one table is created)
+conn=engine.connect()
+
+# insert_people=people.insert().values(
+#     [
+#         {'id':4,'name':'Mike','age':29},
+#         {'id':5,'name':'Bob','age':39},
+#         {'id':6,'name':'Alice','age':20},
+#         {'id':7,'name':'Alex','age':45},
+#         {'id':8,'name':'Minni','age':30}
+#     ]
+# )
+# result=conn.execute(insert_people)
+
+insert_things=things.insert().values([
+    {'id':1,'owner':2,'description':'Laptop','value':600.0},
+    {'id':2,'owner':2,'description':'Mouse','value':50.0},
+    {'id':3,'owner':2,'description':'Keyboard','value':100.0},
+    {'id':4,'owner':3,'description':'Book','value':30.0},
+    {'id':5,'owner':4,'description':'Bottle','value':10.0},
+    {'id':6,'owner':5,'description':'Speaker','value':80.0}
+])
+
+result=conn.execute(insert_things)
+
+
+select_statement=people.select()
+result=conn.execute(select_statement)
+for row in result:
+    print(row)
+
+select_things=things.select()
+result=conn.execute(select_things)
+for row in result:
+    print(row)
+
+conn.commit()

@@ -1,0 +1,37 @@
+from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer, String
+engine=create_engine('postgresql+psycopg://postgres:seema_223@localhost:5432/mydatabase',echo=True)
+
+meta=MetaData()
+
+people=Table(
+    "people", #Name of the table 
+    meta,
+    Column('id',Integer, primary_key=True),
+    Column('name',String, nullable=False),
+    Column('age',Integer)
+)
+
+meta.create_all(engine)  #creates all the table (even when more than one table is created)
+conn=engine.connect()
+insert_statement=people.insert().values(id=3,name='Arun',age=20);
+result=conn.execute(insert_statement)
+
+
+update_statement=people.update().where(people.c.name=='Seema').values(age=21);
+result=conn.execute(update_statement)
+
+delete_statement=people.delete().where(people.c.name=='Seema')
+result=conn.execute(delete_statement)
+
+
+select_statement=people.select()
+result=conn.execute(select_statement)
+for row in result:
+    print(row)
+
+select_statement=people.select().where(people.c.age>20)
+result=conn.execute(select_statement)
+for row in result:
+    print(row)
+    
+conn.commit()

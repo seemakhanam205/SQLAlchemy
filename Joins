@@ -1,0 +1,133 @@
+from sqlalchemy import *
+
+# Create database engine
+engine = create_engine(
+    "postgresql+psycopg://postgres:seema_223@localhost:5432/mydatabase",
+    echo=True
+)
+
+# Metadata object
+meta = MetaData()
+
+# Define the people table
+people = Table(
+    "people",
+    meta,
+    Column("id", Integer, primary_key=True),
+    Column("name", String),
+    Column("age", Integer)
+)
+
+# Define the things table
+things = Table(
+    "things",
+    meta,
+    Column("id", Integer, primary_key=True),
+    Column("description", String),
+    Column("price", Float),
+    Column("owner", Integer, ForeignKey("people.id"))
+)
+
+# Open database connection
+conn = engine.connect()
+
+# ==========================================================
+# INNER JOIN
+# ==========================================================
+
+inner_join = people.join(
+    things,
+    people.c.id == things.c.owner
+)
+
+select_statement = (
+    people.select()
+    .with_only_columns(
+        people.c.name,
+        things.c.description
+    )
+    .select_from(inner_join)
+)
+
+result = conn.execute(select_statement)
+
+print("\n========== INNER JOIN ==========")
+for row in result:
+    print(row)
+
+# ==========================================================
+# LEFT OUTER JOIN
+# ==========================================================
+
+left_join = people.outerjoin(
+    things,
+    people.c.id == things.c.owner
+)
+
+select_statement = (
+    people.select()
+    .with_only_columns(
+        people.c.name,
+        things.c.description
+    )
+    .select_from(left_join)
+)
+
+result = conn.execute(select_statement)
+
+print("\n========== LEFT OUTER JOIN ==========")
+for row in result:
+    print(row)
+
+# ==========================================================
+# RIGHT OUTER JOIN
+# (Implemented by reversing the table order)
+# ==========================================================
+
+right_join = things.outerjoin(
+    people,
+    things.c.owner == people.c.id
+)
+
+select_statement = (
+    things.select()
+    .with_only_columns(
+        things.c.description,
+        people.c.name
+    )
+    .select_from(right_join)
+)
+
+result = conn.execute(select_statement)
+
+print("\n========== RIGHT OUTER JOIN ==========")
+for row in result:
+    print(row)
+
+# ==========================================================
+# FULL OUTER JOIN
+# ==========================================================
+
+full_join = people.join(
+    things,
+    people.c.id == things.c.owner,
+    full=True
+)
+
+select_statement = (
+    people.select()
+    .with_only_columns(
+        people.c.name,
+        things.c.description
+    )
+    .select_from(full_join)
+)
+
+result = conn.execute(select_statement)
+
+print("\n========== FULL OUTER JOIN ==========")
+for row in result:
+    print(row)
+
+# Close connection
+conn.close()

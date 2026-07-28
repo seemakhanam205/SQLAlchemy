@@ -1,0 +1,34 @@
+from sqlalchemy import *
+
+engine = create_engine(
+    "postgresql+psycopg://postgres:seema_223@localhost:5432/mydatabase",
+    echo=True
+)
+
+meta = MetaData()
+
+people = Table(
+    "people",
+    meta,
+    Column("id", Integer, primary_key=True),
+    Column("name", String),
+    Column("age", Integer)
+)
+
+things = Table(
+    "things",
+    meta,
+    Column("id", Integer, primary_key=True),
+    Column("description", String),
+    Column("value", Float),
+    Column("owner", Integer, ForeignKey("people.id"))
+)
+
+conn = engine.connect()
+
+group_by_stmt=things.select().with_only_columns(things.c.owner, func.sum(things.c.value).label("Total price")).group_by(things.c.owner).having(func.sum(things.c.value)>50)
+result=conn.execute(group_by_stmt)  
+# func lets you call SQL functions.
+
+for row in result:
+    print(row)

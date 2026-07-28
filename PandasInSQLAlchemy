@@ -1,0 +1,8 @@
+import pandas as pd
+from sqlalchemy import create_engine
+engine=create_engine('postgresql+psycopg2://postgres:seema_223@localhost:5432/alchemyDB',echo=True)
+df=pd.read_sql("select * from people",con=engine)
+print(df)
+
+new_data=pd.DataFrame({'id':[5,6],'name':['Floria','Jack'],'age':[26,90]})
+new_data.to_sql('people',con=engine,if_exists='append',index=False)
